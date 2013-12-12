@@ -29,7 +29,7 @@ The content of the CMS is organized in an hierarchy of **fields**. Each field ha
 
 ```html
 <template name="example">
-	{{cms 'key'}}
+  {{cms 'key'}}
 </template>
 ```
 
@@ -37,7 +37,7 @@ or
 
 ```html
 <template name="example">
-	{{cms.key}}
+  {{cms.key}}
 </template>
 ```
 
@@ -45,7 +45,7 @@ or
 
 ```html
 <template name="example">
-	{{cmsField 'key' 'type'}}
+  {{cmsField 'key' 'type'}}
 </template>
 ```
 
@@ -53,7 +53,7 @@ or
 
 ```html
 <template name="example">
-	{{cmsField.key.type}}
+  {{cmsField.key.type}}
 </template>
 ```
 
@@ -61,7 +61,7 @@ or
 
 ```javascript
 SemaCMS.registerFilter('type', function(field) {
-  return yourFilter(field.content)	
+  return yourFilter(field.content)  
 })
 ```
 

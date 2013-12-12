@@ -3,17 +3,17 @@ Package.describe({
 });
 
 Package.on_use(function (api) {
-	api.use(['handlebars', 'templating'], 'client');
+  api.use(['handlebars', 'templating'], 'client');
 
   api.add_files(
-  	[
-  	  "fields.js",
-  	  "template.html",
-  	],
-  	"client"
+    [
+      "client/fields.js",
+      "client/template.html",
+    ],
+    "client"
   );
 
-  api.add_files("collections.js", "server");
+  api.add_files("server/collections.js", "server");
   
   api.export('SemaCMS');
 
