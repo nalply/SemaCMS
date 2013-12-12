@@ -1,0 +1,10 @@
+{
+  "name": "semacms",
+  "description": "Embedded theme-less bare-bone CMS",
+  "homepage": "not yet",
+  "author": "Daniel Ly",
+  "version": "0.0",
+  "git": "",
+  "packages": {}
+
+}
