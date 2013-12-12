@@ -1,4 +1,6 @@
-# SemaCMS - minimal theme-less embedded CMS as a Meteor package
+# SemaCMS
+
+**A minimal theme-less embedded CMS as a Meteor package**
 
 The project is in an early stage. There is no backend yet.
 
@@ -41,7 +43,7 @@ or
 </template>
 ```
 
-### Display the type of a field with `key`
+### Display the type of a field with 'key'
 
 ```html
 <template name="example">
