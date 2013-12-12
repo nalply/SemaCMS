@@ -1,50 +1,84 @@
-var settings = (Meteor.settings || {}).public || {}
-var settingsSemaCMS = settings.SemaCMS || {}
-var collectionName = settingsSemaCMS.fieldsCollectionName || "fields"
-var publishName = settingsSemaCMS.fieldsPublishName || "fields"
-var cmsContentHelperName = settingsSemaCMS.cmsContentHelperName || "cms"
-var cmsFieldHelperName = settingsSemaCMS.cmsFieldHelperName || "cmsField"
+SemaCMS = (function () {
+  var SemaCMS = {}
 
-console.info("Subscribe collection %s under %s", collectionName, publishName)
-console.info("Register handlebar helpers %s and %s", 
-	cmsContentHelperName, cmsFieldHelperName)
+  var settings = (Meteor.settings || {}).public || {}
+  settings = settings.SemaCMS || {}
+
+  var collection = settings.fieldsCollection || "fields"
+  var publish = settings.fieldsPublish || "fields"
+  var cmsHelper = settings.cmsHelper || "cms"
+  var cmsFieldHelper = settings.cmsFieldHelper || "cmsField"
 
 
-Meteor.subscribe(publishName) 
-// add parameter { versioning: true } to get all versions
+  // add parameter { versioning: true } to get all versions
+  Meteor.subscribe(publish)
+  console.info("SemaCMS: Subscribed %s => %s.", collection, publish)
 
-SemaCMS = {
-	  Fields: new Meteor.Collection(collectionName)
-  , getCMS: function(criteria) {
-			var fields = SemaCMS.Fields.find(criteria || {}).fetch()
 
-      // Map field array to an object with fields.key as keys.
-			// The root field's key is empty. Use $ instead.  v
-			function key_field(field) { return [field.key || '$', field] }
-			return _.object(_.map(fields, key_field))
+	// {{cms.<fieldKey>}} to render the CMS field's content.
+	// {{cms key}} to render the content of the field with key.
+	Handlebars.registerHelper(cmsHelper, function(key) {
+		var cms = SemaCMS.getCMS()
+		if (key && cms[key]) {
+			SemaCMS.Deps[key].depend()
+			return SemaCMS.filter(cms[key])
 		}
-}
+
+		// _.pluck(fields, 'content') for objects and also dep.depend().
+		function keyContent(field, key) {
+		  SemaCMS.Deps[key].depend() 
+			return [key, SemaCMS.filter(field)] 
+		}
+		return _.object(_.map(cms, keyContent))
+	})
 
 
-// {{cms.<fieldKey>}} to render the CMS field's content.
-// {{cms key}} to render the content of the field with key.
-Handlebars.registerHelper(cmsContentHelperName, function(key) {
-	var cms = SemaCMS.getCMS()
-	if (key && cms[key]) return cms[key].content;
+	// {{cmsField.<fieldKey>.<property>}} to use a field's property.
+	// {{cmsField key property}}  to use the property of the field with key.
+	Handlebars.registerHelper(cmsFieldHelper, function(key, property) {
+		var cms = SemaCMS.getCMS()
+		return key && cms[key] && property ? cms[key][property] : cms
+	})
 
-	// Object _.pluck(fields, 'content')
-	function key_fieldcontent(field, key) { return [key, field.content] }
-	return _.object(_.map(cms, key_fieldcontent))
-})
+  console.info("SemaCMS: Registered Handlebars helpers %s and %s.", 
+		cmsHelper, cmsFieldHelper)
 
 
-// {{cmsField.<fieldKey>.<property>}} to use a field's property.
-// {{cmsField key property}}  to use the property of the field with key.
-// Examples: {{cmsField.child.}}
-Handlebars.registerHelper(cmsFieldHelperName, function(key, property) {
-	var cms = SemaCMS.getCMS();
-	return key && cms[key] && property ? cms[key][property] : cms;
-})
+	SemaCMS.Fields = new Meteor.Collection(collection)
 
-// Todo does not work:
-// {{cmsField.<property> key}}
+  SemaCMS.Deps = {}
+
+  SemaCMS.createDep = function(key) {
+  	if (!SemaCMS.Deps[key]) SemaCMS.Deps[key] = new Deps.Dependency
+  }
+
+  SemaCMS.getCMS = function(criteria) {
+		var fields = SemaCMS.Fields.find(criteria || {}).fetch()
+		_.each(fields, function(field) { SemaCMS.createDep(field.key) })
+
+    // Map field array to an object with fields.key as keys.
+		function keyField(field) { return [field.key, field] }
+		return _.object(_.map(fields, keyField))
+	}
+
+  var filters = {}
+
+  // filter(field) returns the field's filtered content
+	SemaCMS.registerFilter = function(type, filter) {
+		filters[type] = filter
+		console.log(SemaCMS.getCMS({"type": type}))
+		_.each(SemaCMS.getCMS({"type": type}), function(field) {
+			console.info("dep.changed() for " + field.key)
+			SemaCMS.Deps[field.key].changed()
+		})
+	}
+
+	SemaCMS.filter = function(field) {
+		var filter = filters[field.type]
+		console.info("filter for key %s: %s", field.key, filter)
+		return filter ? filter(field) : field.content
+	}
+
+  console.info("SemaCMS: Ready.")
+	return SemaCMS
+})()
