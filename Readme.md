@@ -1,12 +1,12 @@
-# SemaCMS
+# SemaCMSe
 
-**A minimal theme-less embedded CMS as a Meteor package**
+###A barebone theme-less embedded CMS as a Meteor package
 
-The project is in an early stage. There is no backend yet.
+**Note:** The project is in an early stage. There is no backend yet.
 
-Wordpress and similar other CMS suffer that theming can be difficult. One writes a theme, but to get the theme working you have force round pegs through square holes. Processwire is a CMS which seems to work the other way round. There is no theme. One just writes the server application in HTML and invokes a PHP API.
+Theming for Wordpress and similar other CMS can be difficult. One develops a theme, but the devil is in the detail. You have quite to force round pegs into square holes. The CMS Processwire has a different approach. There is no theme. One just writes the server application in HTML and invokes a PHP API to embed content. The content re-uses the application theming.
 
-SemaCMS takes this idea: It works within a Meteor application. SemaCMS is a Meteor package. There are two Handlebar helper `cms` and `cmsField` which can be used everywhere in a template. The former inserts the content of a CMS field, the latter makes the attributes of a CMS field available. A short example:
+SemaCMS steals this idea from Processwire. SemaCMS is just a Meteor package and shares the database with the application by using an additional collection `cms` (the name is configurable). There are two Handlebar helper `cms` and `cmsField` to embed content and metadata in templates. A short example:
 
 ```html
 <template name="example">
@@ -23,7 +23,7 @@ SemaCMS takes this idea: It works within a Meteor application. SemaCMS is a Mete
 </template>
 ```
 
-The content of the CMS is organized in an hierarchy of **fields**. Each field has an unique **key**, versions and languages, and a type. The type defines a validator function, the backend editor and an output filter.
+The content of the CMS is organized in documents called **fields**. Each field has an unique **key**, versions, languages and a type. The type defines a validator function, the backend editor and an output filter.
 
 ## Usage
 
@@ -67,16 +67,28 @@ SemaCMS.registerFilter('type', function(field) {
 })
 ```
 
-Note that if you have HTML markup, you need `new Handlebars.SafeString()` in your filter function.
+Note that if you have HTML markup, you need `new Handlebars.SafeString()` in your filter function. The default filter for the type `richtext` does this for you.
 
-### Register an editor for a field type
+### Register a backend for a field type
 
-Todo.
+It's planned to use a third-party WYSIWYG editor component for the texts. Depending on the type the editor is configured differently, for example for plain texts there are no formatting buttons.
+
+Exact details: Todo.
 
 ### Register a validator for a field type
 
-Todo.
+It's planned for types like numbers. The validator prevents the storing of a non-number in a number field.
+
+Exact details: Todo.
+
+### Register a backend allow callback
+
+It's planned to callback when a template containing a backend is rendered. By default everybody can edit the fields. The callback is given the user ID and the field key and returns a truthy value if the user is allowed to edit that field.
+
+Exact details: Todo.
 
 ## Installation
 
-Todo.
+It's planned that a getting started text is set up automatically the first time SemaCMS is used.
+
+Exact details: Todo.
